@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/book_provider.dart';
+import 'book_detail_screen.dart'; // Import screen detail
 
 class InspirationScreen extends StatefulWidget {
   const InspirationScreen({super.key});
@@ -48,6 +49,7 @@ class _InspirationScreenState extends State<InspirationScreen> {
                 ),
               ),
               onSubmitted: (value) {
+                // Memicu pencarian API saat user menekan Enter
                 context.read<BookProvider>().searchBooks(value);
               },
             ),
@@ -109,43 +111,57 @@ class _InspirationScreenState extends State<InspirationScreen> {
                       itemCount: provider.books.length,
                       itemBuilder: (context, index) {
                         final book = provider.books[index];
-                        return Card(
-                          clipBehavior: Clip.antiAlias,
-                          elevation: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: CachedNetworkImage(
-                                  imageUrl: book.thumbnail,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                                  errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 50),
-                                ),
+                        
+                        // BUNGKUS CARD DENGAN INKWELL UNTUK NAVIGASI
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(8), // Samakan dengan radius card
+                          onTap: () {
+                            // Pindah ke Detail Screen sambil passing data 'book'
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BookDetailScreen(book: book),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      book.title,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      book.authors,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                    ),
-                                  ],
+                            );
+                          },
+                          child: Card(
+                            clipBehavior: Clip.antiAlias,
+                            elevation: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: CachedNetworkImage(
+                                    imageUrl: book.thumbnail,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                    errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 50),
+                                  ),
                                 ),
-                              )
-                            ],
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        book.title,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        book.authors,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
                         );
                       },

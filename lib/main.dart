@@ -3,18 +3,16 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Import file yang baru kita buat
 import 'providers/book_provider.dart';
-import 'screens/inspiration_screen.dart';
+import 'providers/draft_provider.dart';
+import 'screens/main_navigation_screen.dart'; // Import navigation
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Supabase.initialize(
     url: 'https://gahqbtyyzpwkdeiaoyzt.supabase.co',
     publishableKey: 'sb_publishable_SNWJBVVP18c917qbjdEqEg_qxqx5HBX', 
   );
-
   runApp(const MyApp());
 }
 
@@ -25,8 +23,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Daftarkan BookProvider di sini
         ChangeNotifierProvider(create: (_) => BookProvider()),
+        ChangeNotifierProvider(create: (_) => DraftProvider()), // Daftarkan Provider Database
       ],
       child: MaterialApp(
         title: 'InkSpire',
@@ -42,8 +40,7 @@ class MyApp extends StatelessWidget {
             displayColor: const Color(0xFF3E2723),
           ),
         ),
-        // Ubah home menjadi InspirationScreen
-        home: const InspirationScreen(), 
+        home: const MainNavigationScreen(), // Ubah home ke Navigation
       ),
     );
   }
