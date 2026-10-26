@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'home_screen.dart';
 import 'inspiration_screen.dart';
 import 'my_library_screen.dart';
+import 'profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -12,9 +14,12 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
 
+  // 4 Screen Utama
   final List<Widget> _screens = [
+    const HomeScreen(),
     const InspirationScreen(),
     const MyLibraryScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -29,8 +34,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           });
         },
         destinations: const [
+          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.search), label: 'Inspirasi'),
           NavigationDestination(icon: Icon(Icons.library_books), label: 'My Library'),
+          NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
