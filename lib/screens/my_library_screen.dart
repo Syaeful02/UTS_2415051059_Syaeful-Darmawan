@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/draft_provider.dart';
+import '../widgets/draft_card.dart';
+import '../widgets/empty_state.dart';
 import 'create_edit_draft_screen.dart';
 
 class MyLibraryScreen extends StatefulWidget {
@@ -30,62 +32,67 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
       ),
       body: Consumer<DraftProvider>(
         builder: (context, provider, child) {
-          if (provider.isLoading) return const Center(child: CircularProgressIndicator());
-          if (provider.errorMessage != null) return Center(child: Text('Error: ${provider.errorMessage}'));
-          if (provider.drafts.isEmpty) return const Center(child: Text('Belum ada draft novel tersimpan.'));
+          // 1. Loading State
+          if (provider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          // 2. Error State
+          if (provider.errorMessage != null) {
+            return Center(child: Text('Error: ${provider.errorMessage}'));
+          }
+          
+          // 3. Empty State (Menggunakan Reusable Widget)
+          if (provider.drafts.isEmpty) {
+            return const EmptyState(
+              message: 'Belum ada draft novel tersimpan.\nYuk cari inspirasi dan mulai menulis!',
+              icon: Icons.library_books,
+            );
+          }
 
+          // 4. Success/Data State
           return ListView.builder(
             itemCount: provider.drafts.length,
             itemBuilder: (context, index) {
               final draft = provider.drafts[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ListTile(
-                  title: Text(draft.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('${draft.genre} • ${draft.status}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => CreateEditDraftScreen(draft: draft)),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          // Dialog Konfirmasi Delete (Sesuai PDF)
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Hapus Draft?'),
-                              content: Text('Yakin ingin menghapus "${draft.title}"?'),
-                              actions: [
-                                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-                                TextButton(
-                                  onPressed: () async {
-                                    Navigator.pop(context);
-                                    bool success = await provider.deleteDraft(draft.id!);
-                                    if (success && context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Draft berhasil dihapus')),
-                                      );
-                                    }
-                                  },
-                                  child: const Text('Hapus', style: TextStyle(color: Colors.red)),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
+              
+              // Menggunakan Reusable Widget DraftCard
+              return DraftCard(
+                draft: draft,
+                onEdit: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CreateEditDraftScreen(draft: draft)),
+                  );
+                },
+                onDelete: () {
+                  // Dialog Konfirmasi Delete (Sesuai syarat PDF)
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Hapus Draft?'),
+                      content: Text('Yakin ingin menghapus "${draft.title}"?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context), 
+                          child: const Text('Batal')
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            bool success = await provider.deleteDraft(draft.id!);
+                            if (success && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Draft berhasil dihapus')),
+                              );
+                            }
+                          },
+                          child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               );
             },
           );
