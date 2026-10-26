@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/book_provider.dart';
-import 'book_detail_screen.dart'; // Import screen detail
+import '../widgets/book_card.dart';
+import '../widgets/empty_state.dart';
+import 'book_detail_screen.dart';
 
 class InspirationScreen extends StatefulWidget {
   const InspirationScreen({super.key});
@@ -20,6 +21,17 @@ class _InspirationScreenState extends State<InspirationScreen> {
     super.dispose();
   }
 
+  // Fungsi bantuan agar tidak nulis kode berulang
+  void _performSearch() {
+    final query = _searchController.text.trim();
+    if (query.isNotEmpty) {
+      // Sembunyikan keyboard
+      FocusScope.of(context).unfocus();
+      // Panggil API
+      context.read<BookProvider>().searchBooks(query);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,22 +47,21 @@ class _InspirationScreenState extends State<InspirationScreen> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
+              textInputAction: TextInputAction.search, // Mengubah tombol enter jadi ikon search
               decoration: InputDecoration(
-                hintText: 'Cari judul buku atau penulis...',
+                hintText: 'Ketik judul (cth: Harry Potter)...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                // TOMBOL SUBMIT BARU DI SINI
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                  },
+                  icon: const Icon(Icons.arrow_forward, color: Color(0xFF5D4037)),
+                  onPressed: _performSearch, 
                 ),
               ),
               onSubmitted: (value) {
-                // Memicu pencarian API saat user menekan Enter
-                context.read<BookProvider>().searchBooks(value);
+                _performSearch(); // Bisa ditekan lewat tombol enter keyboard juga
               },
             ),
           ),
@@ -85,26 +96,22 @@ class _InspirationScreenState extends State<InspirationScreen> {
 
                 // 3. Empty State
                 if (provider.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'Belum ada buku yang dicari.\nKetik judul buku lalu tekan Enter.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
+                  return const EmptyState(
+                    message: 'Belum ada buku yang dicari.\nKetik judul lalu tekan tombol panah.',
+                    icon: Icons.search,
                   );
                 }
 
-                // 4. Success/Data State (RESPONSIVE LAYOUT)
+                // 4. Success/Data State
                 return LayoutBuilder(
                   builder: (context, constraints) {
-                    // Jika layar lebar (Tablet/Web) -> 4 kolom. Jika HP -> 2 kolom.
                     int crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
 
                     return GridView.builder(
                       padding: const EdgeInsets.all(16),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: crossAxisCount,
-                        childAspectRatio: 0.6, // Mengatur rasio tinggi/lebar card
+                        childAspectRatio: 0.6,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
                       ),
@@ -112,11 +119,9 @@ class _InspirationScreenState extends State<InspirationScreen> {
                       itemBuilder: (context, index) {
                         final book = provider.books[index];
                         
-                        // BUNGKUS CARD DENGAN INKWELL UNTUK NAVIGASI
-                        return InkWell(
-                          borderRadius: BorderRadius.circular(8), // Samakan dengan radius card
+                        return BookCard(
+                          book: book,
                           onTap: () {
-                            // Pindah ke Detail Screen sambil passing data 'book'
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -124,45 +129,6 @@ class _InspirationScreenState extends State<InspirationScreen> {
                               ),
                             );
                           },
-                          child: Card(
-                            clipBehavior: Clip.antiAlias,
-                            elevation: 3,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: CachedNetworkImage(
-                                    imageUrl: book.thumbnail,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                                    errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 50),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        book.title,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        book.authors,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
                         );
                       },
                     );
