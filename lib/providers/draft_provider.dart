@@ -5,22 +5,25 @@ import '../repositories/draft_repository.dart';
 class DraftProvider extends ChangeNotifier {
   final DraftRepository _repository = DraftRepository();
 
-  List<DraftModel> _drafts = [];
+  List<DraftModel> _references = [];
+  List<DraftModel> _originals = [];
   bool _isLoading = false;
   String? _errorMessage;
 
-  List<DraftModel> get drafts => _drafts;
+  List<DraftModel> get references => _references;
+  List<DraftModel> get originals => _originals;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  // READ
-  Future<void> fetchDrafts() async {
+  Future<void> fetchAllDrafts() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _drafts = await _repository.getDrafts();
+      // Memanggil fungsi baru dari repository
+      _references = await _repository.getDraftsByType('reference');
+      _originals = await _repository.getDraftsByType('original');
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -30,11 +33,10 @@ class DraftProvider extends ChangeNotifier {
     }
   }
 
-  // CREATE
   Future<bool> addDraft(DraftModel draft) async {
     try {
       await _repository.addDraft(draft);
-      await fetchDrafts(); // Refresh data
+      await fetchAllDrafts();
       return true;
     } catch (e) {
       _errorMessage = e.toString();
@@ -43,11 +45,10 @@ class DraftProvider extends ChangeNotifier {
     }
   }
 
-  // UPDATE
   Future<bool> updateDraft(DraftModel draft) async {
     try {
       await _repository.editDraft(draft);
-      await fetchDrafts(); // Refresh data
+      await fetchAllDrafts();
       return true;
     } catch (e) {
       _errorMessage = e.toString();
@@ -56,11 +57,10 @@ class DraftProvider extends ChangeNotifier {
     }
   }
 
-  // DELETE
   Future<bool> deleteDraft(int id) async {
     try {
       await _repository.removeDraft(id);
-      await fetchDrafts(); // Refresh data
+      await fetchAllDrafts();
       return true;
     } catch (e) {
       _errorMessage = e.toString();

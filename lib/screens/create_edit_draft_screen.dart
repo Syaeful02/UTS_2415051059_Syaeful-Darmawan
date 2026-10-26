@@ -5,10 +5,16 @@ import '../models/draft_model.dart';
 import '../providers/draft_provider.dart';
 
 class CreateEditDraftScreen extends StatefulWidget {
-  final BookModel? book; // Untuk Create dari API
-  final DraftModel? draft; // Untuk Edit dari Database
+  final BookModel? book;
+  final DraftModel? draft;
+  final String defaultType; // Menentukan apakah ini 'reference' atau 'original'
 
-  const CreateEditDraftScreen({super.key, this.book, this.draft});
+  const CreateEditDraftScreen({
+    super.key, 
+    this.book, 
+    this.draft, 
+    this.defaultType = 'original' // Default ke original jika tidak dispesifikasi
+  });
 
   @override
   State<CreateEditDraftScreen> createState() => _CreateEditDraftScreenState();
@@ -18,6 +24,8 @@ class _CreateEditDraftScreenState extends State<CreateEditDraftScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _titleController;
   late TextEditingController _synopsisController;
+  late TextEditingController _contentController;
+  
   String _selectedGenre = 'Fantasy';
   String _selectedStatus = 'Draft';
 
@@ -27,22 +35,25 @@ class _CreateEditDraftScreenState extends State<CreateEditDraftScreen> {
   @override
   void initState() {
     super.initState();
-    // Jika dari API (Create)
+    // Jika datang dari API (Inspirasi)
     if (widget.book != null) {
       _titleController = TextEditingController(text: widget.book!.title);
       _synopsisController = TextEditingController(text: widget.book!.description);
+      _contentController = TextEditingController();
     } 
-    // Jika dari Database (Edit)
+    // Jika datang dari Database (Edit)
     else if (widget.draft != null) {
       _titleController = TextEditingController(text: widget.draft!.title);
       _synopsisController = TextEditingController(text: widget.draft!.synopsis);
+      _contentController = TextEditingController(text: widget.draft!.content);
       _selectedGenre = widget.draft!.genre;
       _selectedStatus = widget.draft!.status;
     } 
-    // Fallback
+    // Jika dari Home (Buat Novel Baru)
     else {
       _titleController = TextEditingController();
       _synopsisController = TextEditingController();
+      _contentController = TextEditingController();
     }
   }
 
@@ -50,18 +61,25 @@ class _CreateEditDraftScreenState extends State<CreateEditDraftScreen> {
   void dispose() {
     _titleController.dispose();
     _synopsisController.dispose();
+    _contentController.dispose();
     super.dispose();
   }
 
   void _saveData() async {
     if (_formKey.currentState!.validate()) {
       final provider = context.read<DraftProvider>();
+      
+      // Tentukan tipe: Jika sedang edit, pakai tipe lama. Jika baru, pakai defaultType.
+      final draftType = widget.draft?.type ?? widget.defaultType;
+
       final newDraft = DraftModel(
-        id: widget.draft?.id, // Null jika Create, ada isinya jika Edit
+        id: widget.draft?.id, 
         title: _titleController.text,
         genre: _selectedGenre,
         synopsis: _synopsisController.text,
         status: _selectedStatus,
+        content: _contentController.text,
+        type: draftType, 
       );
 
       bool success;
@@ -73,12 +91,12 @@ class _CreateEditDraftScreenState extends State<CreateEditDraftScreen> {
 
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(widget.draft == null ? 'Berhasil menambah draft!' : 'Berhasil mengubah draft!')),
+          SnackBar(content: Text(widget.draft == null ? 'Berhasil menyimpan data!' : 'Berhasil mengubah data!')),
         );
         Navigator.pop(context);
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal menyimpan data.')),
+          SnackBar(content: Text('Gagal: ${provider.errorMessage ?? "Terjadi kesalahan"}')),
         );
       }
     }
@@ -86,9 +104,17 @@ class _CreateEditDraftScreenState extends State<CreateEditDraftScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Cek apakah ini mode Edit, Create Referensi, atau Create Original
+    String appBarTitle = 'Tulis Novel Baru';
+    if (widget.draft != null) {
+      appBarTitle = 'Edit Karya';
+    } else if (widget.defaultType == 'reference') {
+      appBarTitle = 'Simpan Referensi';
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.draft == null ? 'Simpan Draft Novel' : 'Edit Draft Novel'),
+        title: Text(appBarTitle),
         backgroundColor: const Color(0xFF5D4037),
         foregroundColor: Colors.white,
       ),
@@ -103,33 +129,52 @@ class _CreateEditDraftScreenState extends State<CreateEditDraftScreen> {
               validator: (value) => value!.isEmpty ? 'Judul tidak boleh kosong' : null,
             ),
             const SizedBox(height: 16),
-            
-            // PERBAIKAN: value menjadi initialValue
-            DropdownButtonFormField<String>(
-              initialValue: _selectedGenre, 
-              decoration: const InputDecoration(labelText: 'Genre', border: OutlineInputBorder()),
-              items: genres.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-              onChanged: (val) => setState(() => _selectedGenre = val!),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _selectedGenre, 
+                    decoration: const InputDecoration(labelText: 'Genre', border: OutlineInputBorder()),
+                    items: genres.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    onChanged: (val) => setState(() => _selectedGenre = val!),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _selectedStatus, 
+                    decoration: const InputDecoration(labelText: 'Status', border: OutlineInputBorder()),
+                    items: statuses.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    onChanged: (val) => setState(() => _selectedStatus = val!),
+                  ),
+                ),
+              ],
             ),
-            
-            const SizedBox(height: 16),
-            
-            // PERBAIKAN: value menjadi initialValue
-            DropdownButtonFormField<String>(
-              initialValue: _selectedStatus, 
-              decoration: const InputDecoration(labelText: 'Status', border: OutlineInputBorder()),
-              items: statuses.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-              onChanged: (val) => setState(() => _selectedStatus = val!),
-            ),
-            
             const SizedBox(height: 16),
             TextFormField(
               controller: _synopsisController,
-              maxLines: 5,
-              decoration: const InputDecoration(labelText: 'Sinopsis / Catatan', border: OutlineInputBorder()),
+              maxLines: 3,
+              decoration: const InputDecoration(labelText: 'Sinopsis Singkat', border: OutlineInputBorder()),
               validator: (value) => value!.length < 10 ? 'Sinopsis minimal 10 karakter' : null,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+            
+            // Field ini disembunyikan jika hanya menyimpan referensi dari API
+            // Tapi ditampilkan jika ini adalah novel karya user sendiri
+            if (widget.defaultType == 'original' || widget.draft?.type == 'original') ...[
+              TextFormField(
+                controller: _contentController,
+                maxLines: 10,
+                decoration: const InputDecoration(
+                  labelText: 'Isi Novel (Mulai Menulis di Sini...)', 
+                  border: OutlineInputBorder(),
+                  alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            const SizedBox(height: 8),
             ElevatedButton(
               onPressed: _saveData,
               style: ElevatedButton.styleFrom(

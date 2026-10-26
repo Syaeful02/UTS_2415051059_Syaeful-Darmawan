@@ -4,6 +4,8 @@ class DraftModel {
   final String genre;
   final String synopsis;
   final String status;
+  final String content;
+  final String type; // Tambahan: 'reference' atau 'original'
   final DateTime? createdAt;
 
   DraftModel({
@@ -12,6 +14,8 @@ class DraftModel {
     required this.genre,
     required this.synopsis,
     required this.status,
+    required this.content,
+    required this.type, // Wajib diisi
     this.createdAt,
   });
 
@@ -22,6 +26,8 @@ class DraftModel {
       genre: map['genre'] ?? '',
       synopsis: map['synopsis'] ?? '',
       status: map['status'] ?? 'Draft',
+      content: map['content'] ?? '',
+      type: map['type'] ?? 'original', // Default ke original jika kosong
       createdAt: map['created_at'] != null 
           ? DateTime.parse(map['created_at'].toString()) 
           : null,
@@ -34,6 +40,8 @@ class DraftModel {
       'genre': genre,
       'synopsis': synopsis,
       'status': status,
+      'content': content,
+      'type': type,
     };
   }
 }

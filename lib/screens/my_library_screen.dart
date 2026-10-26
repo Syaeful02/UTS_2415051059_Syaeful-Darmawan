@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/draft_provider.dart';
-import '../widgets/draft_card.dart';
 import '../widgets/empty_state.dart';
-import 'create_edit_draft_screen.dart';
+import 'read_novel_screen.dart';
 
 class MyLibraryScreen extends StatefulWidget {
   const MyLibraryScreen({super.key});
@@ -16,9 +15,8 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
   @override
   void initState() {
     super.initState();
-    // Ambil data dari database saat screen dibuka
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DraftProvider>().fetchDrafts();
+      context.read<DraftProvider>().fetchAllDrafts();
     });
   }
 
@@ -26,73 +24,41 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Library'),
+        title: const Text('Perpustakaan Referensi'),
         backgroundColor: const Color(0xFF5D4037),
         foregroundColor: Colors.white,
       ),
       body: Consumer<DraftProvider>(
         builder: (context, provider, child) {
-          // 1. Loading State
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          if (provider.isLoading) return const Center(child: CircularProgressIndicator());
           
-          // 2. Error State
-          if (provider.errorMessage != null) {
-            return Center(child: Text('Error: ${provider.errorMessage}'));
-          }
-          
-          // 3. Empty State (Menggunakan Reusable Widget)
-          if (provider.drafts.isEmpty) {
+          if (provider.references.isEmpty) {
             return const EmptyState(
-              message: 'Belum ada draft novel tersimpan.\nYuk cari inspirasi dan mulai menulis!',
+              message: 'Belum ada buku referensi tersimpan.\nCari di tab Inspirasi.',
               icon: Icons.library_books,
             );
           }
 
-          // 4. Success/Data State
           return ListView.builder(
-            itemCount: provider.drafts.length,
+            itemCount: provider.references.length,
             itemBuilder: (context, index) {
-              final draft = provider.drafts[index];
+              final draft = provider.references[index];
               
-              // Menggunakan Reusable Widget DraftCard
-              return DraftCard(
-                draft: draft,
-                onEdit: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CreateEditDraftScreen(draft: draft)),
-                  );
-                },
-                onDelete: () {
-                  // Dialog Konfirmasi Delete (Sesuai syarat PDF)
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Hapus Draft?'),
-                      content: Text('Yakin ingin menghapus "${draft.title}"?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context), 
-                          child: const Text('Batal')
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            Navigator.pop(context);
-                            bool success = await provider.deleteDraft(draft.id!);
-                            if (success && context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Draft berhasil dihapus')),
-                              );
-                            }
-                          },
-                          child: const Text('Hapus', style: TextStyle(color: Colors.red)),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: ListTile(
+                  title: Text(draft.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text('${draft.genre} • Referensi'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.menu_book, color: Colors.green),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ReadNovelScreen(draft: draft)),
+                      );
+                    },
+                  ),
+                ),
               );
             },
           );

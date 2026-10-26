@@ -14,18 +14,25 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
 
-  // 4 Screen Utama
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const InspirationScreen(),
-    const MyLibraryScreen(),
-    const ProfileScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    // Definisikan screen di dalam build agar bisa mengakses setState
+    final List<Widget> screens = [
+      HomeScreen(
+        // Oper fungsi untuk pindah ke tab Inspiration (index 1)
+        onNavigateToInspiration: () {
+          setState(() {
+            _selectedIndex = 1;
+          });
+        },
+      ),
+      const InspirationScreen(),
+      const MyLibraryScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: screens[_selectedIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (int index) {
@@ -34,7 +41,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           });
         },
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
+          NavigationDestination(icon: Icon(Icons.edit_document), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.search), label: 'Inspirasi'),
           NavigationDestination(icon: Icon(Icons.library_books), label: 'My Library'),
           NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),

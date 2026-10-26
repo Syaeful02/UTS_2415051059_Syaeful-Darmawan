@@ -25,12 +25,22 @@ class BookDetailScreen extends StatelessWidget {
               fit: BoxFit.cover,
             ),
             const SizedBox(height: 16),
-            Text(book.title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            Text(
+              book.title, 
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold), 
+              textAlign: TextAlign.center
+            ),
             const SizedBox(height: 8),
-            Text('Oleh: ${book.authors}', style: const TextStyle(fontSize: 16, color: Colors.grey)),
+            Text(
+              'Oleh: ${book.authors}', 
+              style: const TextStyle(fontSize: 16, color: Colors.grey)
+            ),
             const SizedBox(height: 16),
             const Divider(),
-            const Text('Sinopsis', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Sinopsis', 
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+            ),
             const SizedBox(height: 8),
             Text(book.description, textAlign: TextAlign.justify),
             const SizedBox(height: 32),
@@ -38,17 +48,22 @@ class BookDetailScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.bookmark_add),
-                label: const Text('Tambah ke My Library'),
+                label: const Text('Simpan ke My Library (Referensi)'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF5D4037),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
-                  // Passing data BookModel ke form Create
+                  // Passing data BookModel ke form, dan paksa tipenya menjadi 'reference'
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => CreateEditDraftScreen(book: book)),
+                    MaterialPageRoute(
+                      builder: (context) => CreateEditDraftScreen(
+                        book: book, 
+                        defaultType: 'reference', 
+                      ),
+                    ),
                   );
                 },
               ),
