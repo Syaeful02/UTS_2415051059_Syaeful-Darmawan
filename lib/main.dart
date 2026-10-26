@@ -10,8 +10,8 @@ import 'screens/main_navigation_screen.dart'; // Import navigation
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
-    url: 'https://gahqbtyyzpwkdeiaoyzt.supabase.co',
-    publishableKey: 'sb_publishable_SNWJBVVP18c917qbjdEqEg_qxqx5HBX', 
+    url: 'https://gahqbtyvzpnkdeiaoyzt.supabase.co',
+    publishableKey: 'sb_publishable_SNWJBYVPI8c9i7qbjdEqEg_qxqx5HBX',
   );
   runApp(const MyApp());
 }
@@ -24,7 +24,9 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => BookProvider()),
-        ChangeNotifierProvider(create: (_) => DraftProvider()), // Daftarkan Provider Database
+        ChangeNotifierProvider(
+          create: (_) => DraftProvider(),
+        ), // Daftarkan Provider Database
       ],
       child: MaterialApp(
         title: 'InkSpire',
