@@ -33,3 +33,8 @@ lib/
  ┣ screens/        # 7 Screen Fungsional (Home, Inspirasi, Detail, My Library, Form, Reader, Profile)
  ┣ widgets/        # Reusable Widgets (BookCard, DraftCard, EmptyState)
  ┗ main.dart       # Entry point & Setup Provider/Supabase
+
+ ## Screenshots
+| Home | Inspirasi | My Library |
+|------|-----------|------------|
+| ![Home](https://github.com/Syaeful02/UTS_2415051059_Syaeful-Darmawan/blob/aa46867c56046a86f7bf2e904cd5fdaa93fb9b9f/Screenshot%202026-10-31%20115711.png) | ![Inspirasi](https://github.com/Syaeful02/UTS_2415051059_Syaeful-Darmawan/blob/d74efe931c71e883368fc3825a5a7d7083923a05/page%20inspiration.png) | ![Library](https://github.com/Syaeful02/UTS_2415051059_Syaeful-Darmawan/blob/aee42a7283299a35a0f191c3048f3e370e96c7b0/Page%20Library.png) |
